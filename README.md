@@ -17,7 +17,7 @@ Logs
 Настрою сбор логов на базе rsyslog и auditd  
 На машине web дополнительно установлю epel, nginx и audispd-plugins для auditd  
 ### Конфигурация машины LOG
-rsyslog.conf  
+#### rsyslog.conf  
 включу модули для получение логов с удаленных хостов, и добавлю темплейт и правило  
 логи с других хостов попадут в папки с именами хостов и внутри буду собираться в файлы по названию приложения  
 ```bash
@@ -34,7 +34,7 @@ ruleset(name="remote") {
 input(type="imudp" port="514" ruleset="remote")
 input(type="imtcp" port="514" ruleset="remote")
 ```
-auditd.conf  
+#### auditd.conf  
 раскоментирую строку с номером порта, и увеличу очередь на получение  
 ```bash
 tcp_listen_port = 60
@@ -42,7 +42,7 @@ tcp_listen_queue = 50
 ```
 
 ### Конфигурация WEB
-rsyslog.conf  
+#### rsyslog.conf  
 раскоментирую строки в forwarding rules  
 на ip лог-сервера будут отправлены все логи с уровнем crit и выше
 ```bash
@@ -53,24 +53,24 @@ $ActionQueueType LinkedList   # run asynchronously
 $ActionResumeRetryCount -1    # infinite retries if host is down
 *.crit @@192.168.14.4:514
 ```
-nginx.conf  
+#### nginx.conf  
 в локальный файл логов будут собраны только crit и выше, все остальные логи отправляются на хост 14.4  
 ```bash
 error_log /var/log/nginx/error.log crit;
 error_log syslog:server=192.168.14.4:514,facility=local7,tag=nginx,severity=info;
 access_log syslog:server=192.168.14.4:514,facility=local7,tag=nginx,severity=info main;
 ```
-audit.rules
+#### audit.rules
 добавляю правило для слежения за папкой /etc/nginx
 ```bash
 -w /etc/nginx/ -p rwa -k nginx_config_access
 ```
-audisp-remote.conf  
+#### audisp-remote.conf  
 указываю адрес куда отправлять лог аудита  
 ```bash
 remote_server = 192.168.14.4
 ```
-au-remote.conf  
+#### au-remote.conf  
 включаю плагин отправки на другой хост  
 ```bash
 active = yes
